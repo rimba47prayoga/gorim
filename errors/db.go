@@ -8,3 +8,12 @@ type ObjectNotFoundError struct {
 func (e *ObjectNotFoundError) Error() string {
     return e.Message
 }
+
+
+type InternalServerError struct {
+    Message string
+}
+
+func (e *InternalServerError) Error() string {
+    return e.Message
+}

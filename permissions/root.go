@@ -1,8 +1,10 @@
 package permissions
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/rimba47prayoga/gorim.git"
+)
 
 
 type IPermission interface {
-	HasPermission(echo.Context) bool
+	HasPermission(gorim.Context) bool
 }

@@ -1,11 +1,10 @@
 package views
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"reflect"
 
-	"github.com/labstack/echo/v4"
 	"github.com/rimba47prayoga/gorim.git"
 	"github.com/rimba47prayoga/gorim.git/filters"
 	"github.com/rimba47prayoga/gorim.git/pagination"
@@ -14,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type ActionType func(echo.Context) error
+type ActionType func(gorim.Context) error
 
 
 type ModelViewSet[T any] struct {
@@ -24,7 +23,7 @@ type ModelViewSet[T any] struct {
 	Filter			filters.IFilterSet
 	Permissions		[]permissions.IPermission
 	Action			string
-	Context			echo.Context
+	Context			gorim.Context
 	ExtraActions	[]ActionType
 }
 
@@ -46,11 +45,11 @@ func (h *ModelViewSet[T]) RegisterAction(method ActionType) {
 	h.ExtraActions = append(h.ExtraActions, method)
 }
 
-func (h *ModelViewSet[T]) GetPermissions(c echo.Context) []permissions.IPermission {
+func (h *ModelViewSet[T]) GetPermissions(c gorim.Context) []permissions.IPermission {
 	return h.Permissions
 }
 
-func (h *ModelViewSet[T]) HasPermission(c echo.Context) bool {
+func (h *ModelViewSet[T]) HasPermission(c gorim.Context) bool {
 	permissions := h.GetPermissions(c)
 	for _, permission := range permissions {
 		if !permission.HasPermission(c) {
@@ -61,7 +60,7 @@ func (h *ModelViewSet[T]) HasPermission(c echo.Context) bool {
 }
 
 
-func (h *ModelViewSet[T]) SetContext(c echo.Context) {
+func (h *ModelViewSet[T]) SetContext(c gorim.Context) {
 	h.Context = c
 }
 
@@ -70,11 +69,28 @@ func (h *ModelViewSet[T]) SetAction(name string) {
 	h.Action = name
 }
 
-func(h *ModelViewSet[T]) GetSerializer(c *echo.Context) *serializers.IModelSerializer[T] {
-	return &h.Serializer
+func(h *ModelViewSet[T]) SetupSerializer(
+	serializer serializers.IModelSerializer[T],
+) *serializers.IModelSerializer[T] {
+	serializer.SetContext(h.Context)
+	serializer.SetMeta(serializer.Meta())
+	if err := h.Context.Bind(&serializer); err != nil {
+		log.Fatal("Failed to Bind serializer.")
+	}
+	serializer.SetChild(serializer)
+	return &serializer
+} 
+
+func(h *ModelViewSet[T]) GetSerializer() *serializers.IModelSerializer[T] {
+	serializer := h.GetSerializerStruct()
+	return h.SetupSerializer(serializer)
 }
 
-func (h *ModelViewSet[T]) GetQuerySet(c echo.Context) *gorm.DB {
+func(h *ModelViewSet[T]) GetSerializerStruct() serializers.IModelSerializer[T] {
+	return h.Serializer
+}
+
+func (h *ModelViewSet[T]) GetQuerySet(c gorim.Context) *gorm.DB {
 	if h.Action == "ListDeleted" {
 		return h.QuerySet.Unscoped().Where("deleted_at IS NOT NULL")
 	}
@@ -92,7 +108,7 @@ func (h *ModelViewSet[T]) GetModelSlice() reflect.Value {
 }
 
 func (h *ModelViewSet[T]) FilterQuerySet(
-	c echo.Context,
+	c gorim.Context,
 	results interface{},
 	queryset *gorm.DB,
 ) (*gorm.DB, error) {
@@ -117,7 +133,7 @@ func (h *ModelViewSet[T]) FilterQuerySet(
 }
 
 func (h *ModelViewSet[T]) PaginateQuerySet(
-	ctx echo.Context,
+	ctx gorim.Context,
 	queryset *gorm.DB,
 	results interface{},
 ) *pagination.Pagination {
@@ -128,7 +144,7 @@ func (h *ModelViewSet[T]) PaginateQuerySet(
 
 // @Router [GET] /api/v1/{feature}
 func (h *ModelViewSet[T]) List(
-	c echo.Context,
+	c gorim.Context,
 ) error {
 
 	results := h.GetModelSlice()
@@ -139,8 +155,26 @@ func (h *ModelViewSet[T]) List(
 			"error": err.Error(),
 		})
 	}
-	fmt.Println(queryset, resultsAddr)
 	paginate := h.PaginateQuerySet(c, queryset, resultsAddr)
 
 	return c.JSON(http.StatusOK, paginate.GetPaginatedResponse())
+}
+
+// @Router [POST] /api/v1/{feature}
+func (h *ModelViewSet[T]) Create(
+	c gorim.Context,
+) error {
+
+	serializer := *h.GetSerializer()
+	if !serializer.IsValid() {
+		return c.JSON(http.StatusBadRequest, serializer.GetErrors())
+	}
+
+	data := serializer.Create()
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": false, "message": fmt.Sprintf("Add data failed. %s", err)})
+	// 	return
+	// }
+
+	return c.JSON(http.StatusOK, gorim.Response{"status": true, "message": "Add data succeed.", "data": data})
 }

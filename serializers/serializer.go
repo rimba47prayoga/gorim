@@ -11,31 +11,35 @@ import (
 )
 
 type ISerializer interface {
-	Validate() bool
 	IsValid() bool
 	GetErrors() []errors.ValidationError
 	GetContext() echo.Context
+	SetContext(echo.Context)
+	Setup(interface{})
 }
 
 // Serializer struct with embedded error handling
 type Serializer struct {
-	Errors		[]errors.ValidationError `json:"errors"`
-	structType	reflect.Type
-	context		echo.Context
+	errors			[]errors.ValidationError
+	structType		reflect.Type
+	context			echo.Context
+	setup			bool		// flag to inform if serializer already to use.
 }
-
-
 
 func (s *Serializer) GetContext() echo.Context {
 	return s.context
 }
 
+func (s *Serializer) SetContext(c echo.Context) {
+	s.context = c
+}
+
 func (s *Serializer) GetErrors() []errors.ValidationError {
-	return s.Errors
+	return s.errors
 }
 
 func (s *Serializer) AddError(field string, message string) {
-	s.Errors = append(s.Errors, errors.ValidationError{
+	s.errors = append(s.errors, errors.ValidationError{
 		Field: field,
 		Message: message,
 	})
@@ -68,32 +72,23 @@ func (s *Serializer) HandleError(err error) {
 				Message: fmt.Sprintf("%s is %s", fieldName, e.Tag()),
 			})
 		}
-		s.Errors = validationErrors
+		s.errors = validationErrors
 	} else {
-		s.Errors = append(s.Errors, errors.ValidationError{
+		s.errors = append(s.errors, errors.ValidationError{
 			Field:   reflect.TypeOf(err).String(),
 			Message: err.Error(),
 		})
 	}
 }
 
-func (s *Serializer) Validate() bool {
+
+// IsValid validates the serializer and handles errors.
+func (s *Serializer) IsValid() bool {
 	s.structType = reflect.TypeOf(s).Elem()
-	
-	if err := s.context.Bind(s); err != nil {
-		s.HandleError(err)
-		return false
-	}
 	validate := validator.New()
 	if err := validate.Struct(s); err != nil {
 		s.HandleError(err)
 		return false
 	}
 	return true
-}
-
-
-// IsValid validates the serializer and handles errors.
-func (s *Serializer) IsValid() bool {
-	return s.Validate()
 }

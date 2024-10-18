@@ -1,9 +1,11 @@
 package views
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/rimba47prayoga/gorim.git"
+)
 
 type IBaseView interface {
 	SetAction(string)
-	SetContext(echo.Context)
-	HasPermission(echo.Context) bool
+	SetContext(gorim.Context)
+	HasPermission(gorim.Context) bool
 }

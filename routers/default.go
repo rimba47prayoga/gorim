@@ -1,21 +1,19 @@
 package routers
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 
-	"github.com/labstack/echo/v4"
 	"github.com/rimba47prayoga/gorim.git"
 	"github.com/rimba47prayoga/gorim.git/views"
 )
 
 
 type DefaultRouter[T views.IBaseView] struct {
-	RouteGroup	*echo.Group
+	RouteGroup	*gorim.Group
 }
 
-func NewDefaultRouter[T views.IBaseView](group *echo.Group) *DefaultRouter[T] {
+func NewDefaultRouter[T views.IBaseView](group *gorim.Group) *DefaultRouter[T] {
 	return &DefaultRouter[T]{
 		RouteGroup: group,
 	}
@@ -23,7 +21,7 @@ func NewDefaultRouter[T views.IBaseView](group *echo.Group) *DefaultRouter[T] {
 
 func (r *DefaultRouter[T]) Register(handlerFunc func() T) {
 	// Helper function to create and configure a handler
-	createHandler := func(action string, c echo.Context) T {
+	createHandler := func(action string, c gorim.Context) T {
 		handler := handlerFunc()
 		handler.SetAction(action)
 		handler.SetContext(c)
@@ -33,7 +31,7 @@ func (r *DefaultRouter[T]) Register(handlerFunc func() T) {
 	// Helper function to handle common route logic
 	handleRoute := func(method, path, action string) {
 
-		r.RouteGroup.Add(method, path, func(c echo.Context) error {
+		r.RouteGroup.Add(method, path, func(c gorim.Context) error {
 			handler := createHandler(action, c)
 			// Get the method by name using reflection
 			methodVal := reflect.ValueOf(handler).MethodByName(action)
@@ -42,8 +40,7 @@ func (r *DefaultRouter[T]) Register(handlerFunc func() T) {
 					"error": "You are not authorized to access this resource",
 				})
 			}
-			fmt.Println(methodVal)
-			// Call the method with echo.Context argument and capture return values
+			// Call the method with gorim.Context argument and capture return values
 			result := methodVal.Call([]reflect.Value{reflect.ValueOf(c)})
 
 			// Assuming the method returns an error as the last return value
@@ -60,4 +57,5 @@ func (r *DefaultRouter[T]) Register(handlerFunc func() T) {
 		})
 	}
 	handleRoute(http.MethodGet, "", "List")
+	handleRoute(http.MethodPost, "", "Create")
 }

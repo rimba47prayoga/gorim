@@ -1,8 +1,12 @@
 package serializers
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/labstack/echo/v4"
 	"github.com/rimba47prayoga/gorim.git/errors"
+	"github.com/rimba47prayoga/gorim.git/utils"
 	"gorm.io/gorm"
 )
 
@@ -15,12 +19,14 @@ type Meta[T any] struct {
 
 
 type IModelSerializer[T any] interface {
-	Validate() bool
 	IsValid() bool
 	GetErrors() []errors.ValidationError
 	GetContext() echo.Context
+	SetContext(echo.Context)
 	Meta() *Meta[T]
-	Save() *T
+	SetMeta(*Meta[T])
+	GetMeta() *Meta[T]
+	SetChild(IModelSerializer[T])
 	Create() *T
 	Update() *T
 }
@@ -28,28 +34,58 @@ type IModelSerializer[T any] interface {
 
 type ModelSerializer[T any] struct {
 	Serializer
-	Instance	*T
+	Instance		*T
+	Child			IModelSerializer[T]  // TODO: change to interface
+	meta			*Meta[T]
 }
 
 func (s *ModelSerializer[T]) Meta() *Meta[T] {
 	panic("NotImplementedError: Meta() must be overriden.")
 }
 
-func (s *ModelSerializer[T]) Save() *T {
-	if s.Instance == nil {
-		return s.Create()
+func (s *ModelSerializer[T]) SetMeta(meta *Meta[T]) {
+	s.meta = meta
+}
+
+func (s *ModelSerializer[T]) GetMeta() *Meta[T] {
+	return s.meta
+}
+
+func (s *ModelSerializer[T]) SetChild(child IModelSerializer[T]) {
+	s.Child = child
+}
+
+func (s *ModelSerializer[T]) SetModelAttr(model *T) error {
+	serializer := s.Child
+	for _, field := range serializer.GetMeta().Fields {
+		value, err := utils.GetStructValue(serializer, field)
+		fmt.Println(field, value)
+		if err != nil {
+			return err
+		}
+		utils.SetStructValue(model, field, value)
 	}
-	return s.Update()
+	return nil
 }
 
 func (s *ModelSerializer[T]) Create() *T {
-	meta := s.Meta()
-	meta.DB.Model(&meta.Model).Create(s)
+	serializer := s.Child
+	meta := serializer.GetMeta()
+	err := s.SetModelAttr(&meta.Model)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	meta.DB.Create(&meta.Model)
 	return &meta.Model
 }
 
 func (s *ModelSerializer[T]) Update() *T {
-	meta := s.Meta()
-	meta.DB.Model(&s.Instance).Save(s)
+	serializer := s.Child
+	meta := serializer.GetMeta()
+	err := s.SetModelAttr(&meta.Model)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	meta.DB.Model(&s.Instance).Save(serializer)
 	return &meta.Model
 }
