@@ -16,7 +16,7 @@ func NewUserViewSet() *UserViewSet {
 	var model models.User
 	var serializer UserSerializer
 	queryset := db.DB.Model(model)
-	modelViewSet := views.NewModelViewSet[models.User](
+	modelViewSet := views.NewModelViewSet(
 		&model,
 		queryset,
 		&serializer,
@@ -26,22 +26,3 @@ func NewUserViewSet() *UserViewSet {
 		ModelViewSet: *modelViewSet,
 	}
 }
-
-
-// func (h *UserViewSet) Create(c echo.Context) error {
-// 	serializer := UserSerializer{}
-// 	serializer.SetContext(c)
-// 	serializer.SetMeta(serializer.Meta())
-// 	c.Bind(&serializer)
-// 	validate := validator.New()
-// 	err := validate.Struct(&serializer)
-// 	if err != nil {
-// 		fmt.Println("FALSE")
-// 		return c.JSON(http.StatusBadRequest, gorim.Response{
-// 			"error": err.Error(),
-// 		})
-// 	}
-// 	return c.JSON(http.StatusCreated, gorim.Response{
-// 		"msg": "success",
-// 	})
-// }
