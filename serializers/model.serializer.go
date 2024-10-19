@@ -2,7 +2,6 @@ package serializers
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/labstack/echo/v4"
 	"github.com/rimba47prayoga/gorim.git/errors"
@@ -28,13 +27,12 @@ type IModelSerializer[T any] interface {
 	GetMeta() *Meta[T]
 	SetChild(IModelSerializer[T])
 	Create() *T
-	Update() *T
+	Update(*T) *T
 }
 
 
 type ModelSerializer[T any] struct {
 	Serializer
-	Instance		*T
 	Child			IModelSerializer[T]  // TODO: change to interface
 	meta			*Meta[T]
 }
@@ -58,6 +56,7 @@ func (s *ModelSerializer[T]) SetChild(child IModelSerializer[T]) {
 func (s *ModelSerializer[T]) SetModelAttr(model *T) error {
 	serializer := s.Child
 	for _, field := range serializer.GetMeta().Fields {
+
 		value, err := utils.GetStructValue(serializer, field)
 		fmt.Println(field, value)
 		if err != nil {
@@ -73,19 +72,23 @@ func (s *ModelSerializer[T]) Create() *T {
 	meta := serializer.GetMeta()
 	err := s.SetModelAttr(&meta.Model)
 	if err != nil {
-		log.Fatal(err.Error())
+		panic(&errors.InternalServerError{
+			Message: err.Error(),
+		})
 	}
 	meta.DB.Create(&meta.Model)
 	return &meta.Model
 }
 
-func (s *ModelSerializer[T]) Update() *T {
+func (s *ModelSerializer[T]) Update(instance *T) *T {
 	serializer := s.Child
 	meta := serializer.GetMeta()
-	err := s.SetModelAttr(&meta.Model)
+	err := s.SetModelAttr(instance)
 	if err != nil {
-		log.Fatal(err.Error())
+		panic(&errors.InternalServerError{
+			Message: err.Error(),
+		})
 	}
-	meta.DB.Model(&s.Instance).Save(serializer)
-	return &meta.Model
+	meta.DB.Save(instance)
+	return instance
 }

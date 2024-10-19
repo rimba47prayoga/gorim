@@ -58,4 +58,6 @@ func (r *DefaultRouter[T]) Register(handlerFunc func() T) {
 	}
 	handleRoute(http.MethodGet, "", "List")
 	handleRoute(http.MethodPost, "", "Create")
+	handleRoute(http.MethodGet, "/:id", "Retrieve")
+	handleRoute(http.MethodPut, "/:id", "Update")
 }

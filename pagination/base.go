@@ -16,13 +16,13 @@ import (
 )
 
 type Pagination struct {
-	Db				*gorm.DB
+	Db				*gorm.DB    `json:"-"`
     Page         	int         `json:"page" default:"1"`
 	PageSize		int			`json:"page_size" default:"10"`
     Sort         	string      `json:"sort"`
     TotalRows    	int64       `json:"total_rows"`    
     TotalPages   	int         `json:"total_pages"`   
-    Data         	interface{} `json:"data"`  
+    Data         	interface{} `json:"-"`  
 }
 
 func (p *Pagination) GetOffset() int {  

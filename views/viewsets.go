@@ -1,15 +1,16 @@
 package views
 
 import (
-	"log"
 	"net/http"
 	"reflect"
 
 	"github.com/rimba47prayoga/gorim.git"
+	"github.com/rimba47prayoga/gorim.git/errors"
 	"github.com/rimba47prayoga/gorim.git/filters"
 	"github.com/rimba47prayoga/gorim.git/pagination"
 	"github.com/rimba47prayoga/gorim.git/permissions"
 	"github.com/rimba47prayoga/gorim.git/serializers"
+	"github.com/rimba47prayoga/gorim.git/utils"
 	"gorm.io/gorm"
 )
 
@@ -75,7 +76,9 @@ func(h *ModelViewSet[T]) SetupSerializer(
 	serializer.SetContext(h.Context)
 	serializer.SetMeta(serializer.Meta())
 	if err := h.Context.Bind(&serializer); err != nil {
-		log.Fatal("Failed to Bind serializer.")
+		panic(&errors.InternalServerError{
+			Message: err.Error(),
+		})
 	}
 	serializer.SetChild(serializer)
 	return &serializer
@@ -90,11 +93,18 @@ func(h *ModelViewSet[T]) GetSerializerStruct() serializers.IModelSerializer[T] {
 	return h.Serializer
 }
 
-func (h *ModelViewSet[T]) GetQuerySet(c gorim.Context) *gorm.DB {
+func (h *ModelViewSet[T]) GetQuerySet() *gorm.DB {
 	if h.Action == "ListDeleted" {
 		return h.QuerySet.Unscoped().Where("deleted_at IS NOT NULL")
 	}
 	return h.QuerySet
+}
+
+func (h *ModelViewSet[T]) GetObject() *T {
+	id := h.Context.Param("id")
+	queryset := h.GetQuerySet()
+	result := utils.GetObjectOr404[T](queryset, "id = ?", id)
+	return result
 }
 
 func (h *ModelViewSet[T]) GetModelSlice() reflect.Value {
@@ -113,7 +123,7 @@ func (h *ModelViewSet[T]) FilterQuerySet(
 	queryset *gorm.DB,
 ) (*gorm.DB, error) {
 	if queryset == nil {
-		queryset = h.GetQuerySet(c)
+		queryset = h.GetQuerySet()
 	}
 
 	if h.Filter == nil {
@@ -160,21 +170,32 @@ func (h *ModelViewSet[T]) List(
 	return c.JSON(http.StatusOK, paginate.GetPaginatedResponse())
 }
 
+func (h *ModelViewSet[T]) Retrieve(c gorim.Context) error {
+	instance := h.GetObject()
+	return c.JSON(http.StatusOK, instance)
+}
+
 // @Router [POST] /api/v1/{feature}
 func (h *ModelViewSet[T]) Create(
 	c gorim.Context,
 ) error {
-
 	serializer := *h.GetSerializer()
 	if !serializer.IsValid() {
 		return c.JSON(http.StatusBadRequest, serializer.GetErrors())
 	}
-
 	data := serializer.Create()
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"status": false, "message": fmt.Sprintf("Add data failed. %s", err)})
-	// 	return
-	// }
+	return c.JSON(http.StatusCreated, data)
+}
 
-	return c.JSON(http.StatusOK, gorim.Response{"status": true, "message": "Add data succeed.", "data": data})
+// @Router [PUT] /api/v1/{feature}/:id
+func (h *ModelViewSet[T]) Update(
+	c gorim.Context,
+) error {
+	instance := h.GetObject()
+	serializer := *h.GetSerializer()
+	if !serializer.IsValid() {
+		return c.JSON(http.StatusBadRequest, serializer.GetErrors())
+	}
+	data := serializer.Update(instance)
+	return c.JSON(http.StatusOK, data)
 }
