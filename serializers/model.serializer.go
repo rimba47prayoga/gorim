@@ -34,7 +34,7 @@ type IModelSerializer[T any] interface {
 type ModelSerializer[T any] struct {
 	Serializer
 	Child			IModelSerializer[T]  // TODO: change to interface
-	meta			*Meta[T]
+	meta			*Meta[T]	`json:"-"`
 }
 
 func (s *ModelSerializer[T]) Meta() *Meta[T] {

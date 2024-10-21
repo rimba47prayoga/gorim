@@ -15,14 +15,14 @@ type UserViewSet struct {
 func NewUserViewSet() *UserViewSet {
 	var model models.User
 	var serializer UserSerializer
-	queryset := db.DB.Model(model)
-	modelViewSet := views.NewModelViewSet(
-		&model,
-		queryset,
-		&serializer,
-		nil,
-	)
-	return &UserViewSet{
-		ModelViewSet: *modelViewSet,
+	queryset := db.DB.Model(&model)
+	viewset := UserViewSet{}
+	params := views.ModelViewSetParams[models.User]{
+		QuerySet: queryset,
+		Serializer: &serializer,
+		Child: &viewset,
 	}
+	modelViewSet := views.NewModelViewSet(params)
+	viewset.ModelViewSet = *modelViewSet
+	return &viewset
 }

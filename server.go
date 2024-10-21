@@ -25,43 +25,9 @@ func (s *Server) Group(prefix string, middleware ...echo.MiddlewareFunc) *Group 
 	} // Return a new Gorim group
 }
 
-// Group is a custom group that extends Echo's Group
-type Group struct {
-    EchoGroup *echo.Group // Embed the Echo Group
-}
-
-func (g *Group) Group(prefix string, middleware ...echo.MiddlewareFunc) *Group {
-	echoGroup := g.EchoGroup.Group(prefix, middleware...)
-	return &Group{
-		EchoGroup: echoGroup,
-	}
-}
-
-// Add implements `Echo#Add()` for sub-routes within the Group.
-func (g *Group) Add(method string, path string, handler HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
-	// Combine into a new slice to avoid accidentally passing the same slice for
-	// multiple routes, which would lead to later add() calls overwriting the
-	// middleware from earlier calls.
-	return g.EchoGroup.Add(method, path, func(c echo.Context) error {
-		ctx := NewContext(c)
-		return handler(ctx)
-	})
-}
-
-// Context is a custom context that extends Echo's Context
-type Context struct {
-    echo.Context
-}
 
 // HandlerFunc is a custom function type for handling requests
 type HandlerFunc func(Context) error
-
-// NewContext creates a new Gorim context
-func NewContext(echoContext echo.Context) Context {
-    return Context{
-        Context: echoContext,
-    }
-}
 
 // AddRoute registers a new route with the specified method, path, and handler
 func (s *Server) AddRoute(method string, path string, handler HandlerFunc) {
