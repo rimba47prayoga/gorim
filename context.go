@@ -2,13 +2,12 @@ package gorim
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/rimba47prayoga/gorim.git/models"
 )
 
 // Context is a custom context that extends Echo's Context
 type Context struct {
     echo.Context
-	User	models.User
+	User	interface{}
 }
 
 // NewContext creates a new Gorim context

@@ -2,7 +2,9 @@ package user
 
 import (
 	"example/db"
+	"net/http"
 
+	"github.com/rimba47prayoga/gorim.git"
 	"github.com/rimba47prayoga/gorim.git/models"
 	"github.com/rimba47prayoga/gorim.git/views"
 )
@@ -25,4 +27,10 @@ func NewUserViewSet() *UserViewSet {
 	modelViewSet := views.NewModelViewSet(params)
 	viewset.ModelViewSet = *modelViewSet
 	return &viewset
+}
+
+func (h *UserViewSet) Profile(ctx gorim.Context) error {
+	return ctx.JSON(http.StatusOK, gorim.Response{
+		"status": true,
+	})
 }

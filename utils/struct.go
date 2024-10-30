@@ -3,7 +3,69 @@ package utils
 import (
 	"fmt"
 	"reflect"
+	"runtime"
+	"strings"
 )
+
+// HasAttr checks if a struct has a field or method with a given name
+func HasAttr(obj interface{}, name string) bool {
+    val := reflect.ValueOf(obj)
+    typ := reflect.TypeOf(obj)
+
+    // Ensure we are dealing with a pointer or struct for both field and method check
+    if val.Kind() == reflect.Ptr {
+        val = val.Elem()
+        typ = typ.Elem()
+    }
+
+    // Check for field
+    if val.Kind() == reflect.Struct {
+        if _, exists := typ.FieldByName(name); exists {
+            return true
+        }
+    }
+
+    // Check for method on either the struct or pointer
+    if reflect.ValueOf(obj).MethodByName(name).IsValid() || val.MethodByName(name).IsValid() {
+        return true
+    }
+
+    return false
+}
+
+// GetStructName takes a struct or pointer to a struct and returns the struct's name as a string
+func GetStructName(obj interface{}) string {
+    t := reflect.TypeOf(obj)
+
+    // If it's a pointer, get the element type
+    if t.Kind() == reflect.Ptr {
+        t = t.Elem()
+    }
+
+    // Ensure that the type is actually a struct
+    if t.Kind() == reflect.Struct {
+        return t.Name()
+    }
+
+    return ""
+}
+
+
+// GetMethodName takes a function and returns its name as a string
+func GetMethodName(fn interface{}) string {
+    value := reflect.ValueOf(fn)
+    if value.Kind() == reflect.Func {
+        fullName := runtime.FuncForPC(value.Pointer()).Name()
+        // Split the full name and return the last part
+        parts := strings.Split(fullName, ".")
+        methodName := parts[len(parts)-1]
+
+        // Remove any "-fm" suffix that appears with method expressions
+        methodName = strings.Split(methodName, "-")[0]
+        return methodName
+    }
+    return ""
+}
 
 func GetStructValue(instance interface{}, field string) (interface{}, error) {
 	val := reflect.ValueOf(instance)

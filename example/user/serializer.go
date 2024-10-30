@@ -20,10 +20,3 @@ func (s *UserSerializer) Meta() *serializers.Meta[models.User] {
 		DB: db.DB,
 	}
 }
-
-// func (s *UserSerializer) Create() *models.User {
-// 	var user models.User
-// 	s.SetModelAttr(&user)
-// 	db.DB.Model(&user).Save(s)
-// 	return &user
-// }

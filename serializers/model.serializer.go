@@ -1,8 +1,6 @@
 package serializers
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/rimba47prayoga/gorim.git/errors"
 	"github.com/rimba47prayoga/gorim.git/utils"
@@ -53,29 +51,29 @@ func (s *ModelSerializer[T]) SetChild(child IModelSerializer[T]) {
 	s.Child = child
 }
 
-func (s *ModelSerializer[T]) SetModelAttr(model *T) error {
+func (s *ModelSerializer[T]) SetModelAttr(model *T) {
 	serializer := s.Child
 	for _, field := range serializer.GetMeta().Fields {
 
 		value, err := utils.GetStructValue(serializer, field)
-		fmt.Println(field, value)
 		if err != nil {
-			return err
+			errors.Raise(&errors.InternalServerError{
+				Message: err.Error(),
+			})
 		}
-		utils.SetStructValue(model, field, value)
+		err = utils.SetStructValue(model, field, value)
+		if err != nil {
+			errors.Raise(&errors.InternalServerError{
+				Message: err.Error(),
+			})
+		}
 	}
-	return nil
 }
 
 func (s *ModelSerializer[T]) Create() *T {
 	serializer := s.Child
 	meta := serializer.GetMeta()
-	err := s.SetModelAttr(&meta.Model)
-	if err != nil {
-		panic(&errors.InternalServerError{
-			Message: err.Error(),
-		})
-	}
+	s.SetModelAttr(&meta.Model)
 	meta.DB.Create(&meta.Model)
 	return &meta.Model
 }
@@ -83,12 +81,7 @@ func (s *ModelSerializer[T]) Create() *T {
 func (s *ModelSerializer[T]) Update(instance *T) *T {
 	serializer := s.Child
 	meta := serializer.GetMeta()
-	err := s.SetModelAttr(instance)
-	if err != nil {
-		panic(&errors.InternalServerError{
-			Message: err.Error(),
-		})
-	}
+	s.SetModelAttr(instance)
 	meta.DB.Save(instance)
 	return instance
 }

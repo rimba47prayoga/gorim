@@ -1,7 +1,6 @@
 package filters
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/labstack/echo/v4"
@@ -59,7 +58,6 @@ func (fs FilterSet) ApplyFilters(filter interface{}, ctx echo.Context, db *gorm.
 	filteredFields := fs.FilteredFields(filter)
 	if len(filteredFields) == 0 {
 		// If no fields are set, return the original query without filtering
-		fmt.Println("NO Filter")
 		return db
 	}
 

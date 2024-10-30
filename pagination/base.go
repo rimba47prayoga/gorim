@@ -1,7 +1,6 @@
 package pagination
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mcuadros/go-defaults"
+	"github.com/rimba47prayoga/gorim.git/errors"
 	"github.com/rimba47prayoga/gorim.git/models"
 	"github.com/rimba47prayoga/gorim.git/utils"
 	"gorm.io/gorm"
@@ -87,7 +87,7 @@ func InitPagination(ctx echo.Context, db *gorm.DB) *Pagination {
 	return &pagination
 }
 
-func (p *Pagination) SortQuery(results interface{}) ([]string, error) {
+func (p *Pagination) SortQuery(results interface{}) []string {
     // Extract the model type from the slice
     sliceType := reflect.TypeOf(results)
     
@@ -96,15 +96,18 @@ func (p *Pagination) SortQuery(results interface{}) ([]string, error) {
         sliceType = sliceType.Elem()
     }
     if sliceType.Kind() != reflect.Slice {
-        return nil, errors.New("not a slice or pointer to slice, cannot proceed")
+        errors.Raise(&errors.InternalServerError{
+            Message: "not a slice or pointer to slice, cannot proceed",
+        })
     }
     modelType := sliceType.Elem()
 
     // Get valid fields for sorting
     validFields, err := models.GetModelFields(modelType)
     if err != nil {
-        // Handle error (e.g., log it)
-        return nil, err
+        errors.Raise(&errors.InternalServerError{
+            Message: err.Error(),
+        })
     }
     // Convert valid fields to lowercase
     for i, field := range validFields {
@@ -127,8 +130,7 @@ func (p *Pagination) SortQuery(results interface{}) ([]string, error) {
     for _, sortClause := range validSortClauses {
         p.Db = p.Db.Order(sortClause)
     }
-    fmt.Println(validSortClauses)
-    return validSortClauses, nil
+    return validSortClauses
 }
 
 func (p *Pagination) PaginateQuery(results interface{}) {
@@ -142,11 +144,7 @@ func (p *Pagination) PaginateQuery(results interface{}) {
     }
     p.TotalPages = totalPages
     offset := (p.Page - 1) * p.PageSize
-    sortClauses, err := p.SortQuery(results)
-    if err != nil {
-        fmt.Println(err)
-        return
-    }
+    sortClauses := p.SortQuery(results)
     p.Sort = strings.Join(sortClauses, ",")
     p.Db.Offset(offset).Limit(p.PageSize).Find(results)
     p.Data = results

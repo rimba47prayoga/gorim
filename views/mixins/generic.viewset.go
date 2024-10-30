@@ -1,7 +1,6 @@
 package mixins
 
 import (
-	"net/http"
 	"reflect"
 
 	"github.com/rimba47prayoga/gorim.git"
@@ -17,7 +16,12 @@ import (
 type ActionType func(gorim.Context) error
 
 type IGenericViewSet[T any] interface {
+	GetModelSlice() reflect.Value
+	GetObject() *T
 	GetSerializer() *serializers.IModelSerializer[T]
+	GetSerializerStruct() serializers.IModelSerializer[T]
+	FilterQuerySet(interface{}, *gorm.DB) *gorm.DB
+	PaginateQuerySet(interface{}, *gorm.DB) *pagination.Pagination
 }
 
 
@@ -40,7 +44,6 @@ type GenericViewSet[T any] struct {
 	Permissions		[]permissions.IPermission
 	Action			string
 	Context			gorim.Context
-	ExtraActions	[]ActionType
 	Child			IGenericViewSet[T]
 }
 
@@ -121,7 +124,7 @@ func (h *GenericViewSet[T]) GetQuerySet() *gorm.DB {
 
 func (h *GenericViewSet[T]) GetObject() *T {
 	pkField := h.GetPKField()
-	id := h.Context.Param("id")
+	id := h.Context.Param("pk")
 	queryset := h.GetQuerySet()
 	result := utils.GetObjectOr404[T](queryset, pkField + " = ?", id)
 	return result
@@ -138,36 +141,37 @@ func (h *GenericViewSet[T]) GetModelSlice() reflect.Value {
 }
 
 func (h *GenericViewSet[T]) FilterQuerySet(
-	c gorim.Context,
 	results interface{},
 	queryset *gorm.DB,
-) (*gorm.DB, error) {
+) *gorm.DB {
 	if queryset == nil {
 		queryset = h.GetQuerySet()
 	}
 
 	if h.Filter == nil {
-		return queryset, nil
+		return queryset
 	}
-	if err := c.Bind(h.Filter); err != nil {
-		c.JSON(http.StatusBadRequest, gorim.Response{"error": err.Error()})
-		return nil, err
+	if err := h.Context.Bind(h.Filter); err != nil {
+		errors.Raise(&errors.InternalServerError{
+			Message: err.Error(),
+		})
 	}
-	queryset = h.Filter.ApplyFilters(h.Filter, c, queryset)
+	queryset = h.Filter.ApplyFilters(h.Filter, h.Context, queryset)
 
 	err := queryset.Find(results).Error
 	if err != nil {
-		return nil, err
+		errors.Raise(&errors.InternalServerError{
+			Message: err.Error(),
+		})
 	}
-	return queryset, nil
+	return queryset
 }
 
 func (h *GenericViewSet[T]) PaginateQuerySet(
-	ctx gorim.Context,
-	queryset *gorm.DB,
 	results interface{},
+	queryset *gorm.DB,
 ) *pagination.Pagination {
-	pagination := pagination.InitPagination(ctx, queryset)
+	pagination := pagination.InitPagination(h.Context, queryset)
 	pagination.PaginateQuery(results)
 	return pagination
 }

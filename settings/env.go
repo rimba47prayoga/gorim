@@ -7,6 +7,15 @@ import (
 	"github.com/joho/godotenv"
 )
 
+
+type Database struct {
+	Name		string
+	Host		string
+	Port		int
+	Password	string
+}
+
+
 // GetEnv returns the value of the environment variable or a default value if not set.
 func GetEnv(key, defaultValue string) string {
 	value := os.Getenv(key)
