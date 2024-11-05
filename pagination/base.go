@@ -101,9 +101,14 @@ func (p *Pagination) SortQuery(results interface{}) []string {
         })
     }
     modelType := sliceType.Elem()
-
+    if modelType.Kind() == reflect.Ptr {
+        modelType = modelType.Elem() // Dereference the pointer to get the actual struct type
+    }
+     // Create a new instance of the model and pass it to GetModelFields
+    modelInstance := reflect.New(modelType).Elem().Interface()
     // Get valid fields for sorting
-    validFields, err := models.GetModelFields(modelType)
+    validFields, err := models.GetModelFields(modelInstance)
+    fmt.Println("validFields: ", validFields)
     if err != nil {
         errors.Raise(&errors.InternalServerError{
             Message: err.Error(),

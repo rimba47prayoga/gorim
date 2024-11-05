@@ -16,16 +16,3 @@ func NewContext(echoContext echo.Context) Context {
         Context: echoContext,
     }
 }
-
-
-type GContext[T any] struct {
-	echo.Context
-	User	T
-}
-
-// NewContext creates a new Gorim context
-func NewGContext[T any](echoContext echo.Context) GContext[T] {
-    return GContext[T]{
-        Context: echoContext,
-    }
-}

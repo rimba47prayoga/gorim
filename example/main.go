@@ -6,13 +6,11 @@ import (
 	"log"
 
 	"github.com/rimba47prayoga/gorim.git"
-	"github.com/rimba47prayoga/gorim.git/settings"
 )
 
 
 func main() {
 	server := gorim.New()
-	settings.Configure()
 	db.SetupDatabase()
 
 	api := server.Group("/api/v1")

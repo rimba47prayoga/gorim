@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	"github.com/rimba47prayoga/gorim.git"
+	"github.com/rimba47prayoga/gorim.git/conf"
 	"github.com/rimba47prayoga/gorim.git/errors"
 	"github.com/rimba47prayoga/gorim.git/filters"
 	"github.com/rimba47prayoga/gorim.git/pagination"
@@ -50,10 +51,14 @@ type GenericViewSet[T any] struct {
 func NewGenericViewSet[T any](
 	params GenericViewSetParams[T],
 ) *GenericViewSet[T] {
-	model := params.QuerySet.Statement.Model.(*T)
+	var model T
+	queryset := params.QuerySet
+	if queryset == nil {
+		queryset = conf.DB.Model(&model)
+	}
 	return &GenericViewSet[T]{
-		Model: model,
-		QuerySet: params.QuerySet,
+		Model: &model,
+		QuerySet: queryset,
 		Serializer: params.Serializer,
 		Filter: params.Filter,
 		Permissions: params.Permissions,
@@ -96,7 +101,6 @@ func(h *GenericViewSet[T]) SetupSerializer(
 	serializer serializers.IModelSerializer[T],
 ) *serializers.IModelSerializer[T] {
 	serializer.SetContext(h.Context)
-	serializer.SetMeta(serializer.Meta())
 	if err := h.Context.Bind(&serializer); err != nil {
 		panic(&errors.InternalServerError{
 			Message: err.Error(),

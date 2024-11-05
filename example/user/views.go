@@ -1,7 +1,6 @@
 package user
 
 import (
-	"example/db"
 	"net/http"
 
 	"github.com/rimba47prayoga/gorim.git"
@@ -15,12 +14,9 @@ type UserViewSet struct {
 }
 
 func NewUserViewSet() *UserViewSet {
-	var model models.User
 	var serializer UserSerializer
-	queryset := db.DB.Model(&model)
 	viewset := UserViewSet{}
 	params := views.ModelViewSetParams[models.User]{
-		QuerySet: queryset,
 		Serializer: &serializer,
 		Child: &viewset,
 	}
