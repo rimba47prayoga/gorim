@@ -16,3 +16,12 @@ func NewContext(echoContext echo.Context) Context {
         Context: echoContext,
     }
 }
+
+// GetBool returns the value associated with the key as a boolean.
+func (c *Context) GetBool(key string) bool {
+	if val := c.Get(key); val != nil {
+		b, _ := val.(bool)
+        return b
+	}
+	return false
+}

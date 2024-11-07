@@ -111,7 +111,7 @@ func(h *GenericViewSet[T]) SetupSerializer(
 } 
 
 func(h *GenericViewSet[T]) GetSerializer() *serializers.IModelSerializer[T] {
-	serializer := h.GetSerializerStruct()
+	serializer := h.Child.GetSerializerStruct()
 	return h.SetupSerializer(serializer)
 }
 

@@ -10,3 +10,13 @@ type UserSerializer struct {
 	Email		string		`validate:"required,email" json:"email"`
 	Password	string		`validate:"required" json:"password"`
 }
+
+type UserProfileSerializer struct {
+	serializers.ModelSerializer[models.User]
+	Username	string		`validate:"required" json:"username"`
+	Password	string		`validate:"required" json:"password"`
+}
+
+func (s *UserProfileSerializer) ValidateUsername() {
+	s.AddError("username", "not valid")
+}

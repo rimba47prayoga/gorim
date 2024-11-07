@@ -15,7 +15,6 @@ type ISerializer interface {
 	GetErrors() []errors.ValidationError
 	GetContext() echo.Context
 	SetContext(echo.Context)
-	Setup(interface{})
 }
 
 // Serializer struct with embedded error handling
@@ -23,7 +22,6 @@ type Serializer struct {
 	errors			[]errors.ValidationError
 	structType		reflect.Type
 	context			echo.Context
-	setup			bool		// flag to inform if serializer already to use.
 }
 
 func (s *Serializer) GetContext() echo.Context {

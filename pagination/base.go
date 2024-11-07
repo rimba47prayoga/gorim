@@ -108,7 +108,6 @@ func (p *Pagination) SortQuery(results interface{}) []string {
     modelInstance := reflect.New(modelType).Elem().Interface()
     // Get valid fields for sorting
     validFields, err := models.GetModelFields(modelInstance)
-    fmt.Println("validFields: ", validFields)
     if err != nil {
         errors.Raise(&errors.InternalServerError{
             Message: err.Error(),
