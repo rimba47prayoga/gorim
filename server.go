@@ -1,10 +1,7 @@
 package gorim
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/color"
 	"github.com/rimba47prayoga/gorim.git/middlewares"
 )
 
@@ -62,30 +59,18 @@ func (s *Server) OPTIONS(path string, handler HandlerFunc) {
     s.AddRoute(echo.OPTIONS, path, handler)
 }
 
+func (s *Server) Use(middleware ...echo.MiddlewareFunc) {
+	s.Echo.Use(middleware...)
+}
+
 func New() *Server {
 	e := echo.New()
 	e.HideBanner = true
+	e.HidePort = true
 
 	server := Server{
 		Echo: e,
 	}
-	versionNumber := "v1.1"
-	version := color.Red(versionNumber)
-	powered := "Powered by echo.labstack.com"
-	inspired := color.Green("~ Inspired By Django")
-
-	customBanner := `
-  _____ ____   ___   ____ __  ___
- / ___// __ \ / _ \ /  _//  |/  /
-/ (_ // /_/ // , _/_/ / / /|_/ / 
-\___/ \____//_/|_|/___//_/  /_/    %s
-
-The Go Rest Framework for perfectionists with deadlines.
-%s
-%s
-`
-	banner := fmt.Sprintf(customBanner, version, inspired, powered)
-	println(banner)
 	e.Use(middlewares.RecoverMiddleware)
 	return &server
 }

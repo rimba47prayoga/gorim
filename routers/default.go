@@ -6,17 +6,17 @@ import (
 	"reflect"
 
 	"github.com/rimba47prayoga/gorim.git"
+	"github.com/rimba47prayoga/gorim.git/interfaces"
 	"github.com/rimba47prayoga/gorim.git/utils"
-	"github.com/rimba47prayoga/gorim.git/views"
 )
 
 
-type DefaultRouter[T views.IBaseView] struct {
+type DefaultRouter[T interfaces.IBaseView] struct {
 	RouteGroup	*gorim.Group
 	HandlerFunc func() T
 }
 
-func NewDefaultRouter[T views.IBaseView](group *gorim.Group, handlerFunc func() T) *DefaultRouter[T] {
+func NewDefaultRouter[T interfaces.IBaseView](group *gorim.Group, handlerFunc func() T) *DefaultRouter[T] {
 	router := DefaultRouter[T]{
 		RouteGroup: group,
 		HandlerFunc: handlerFunc,

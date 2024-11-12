@@ -1,8 +1,6 @@
-package views
+package interfaces
 
-import (
-	"github.com/rimba47prayoga/gorim.git"
-)
+import "github.com/rimba47prayoga/gorim.git"
 
 type IBaseView interface {
 	SetAction(string)

@@ -16,13 +16,13 @@ import (
 )
 
 type Pagination struct {
-	Db				*gorm.DB    `json:"-"`
+    QuerySet        *gorm.DB    `json:"-"`
     Page         	int         `json:"page" default:"1"`
 	PageSize		int			`json:"page_size" default:"10"`
     Sort         	string      `json:"sort"`
     TotalRows    	int64       `json:"total_rows"`    
     TotalPages   	int         `json:"total_pages"`   
-    Data         	interface{} `json:"-"`  
+    Results         interface{} `json:"results"`  
 }
 
 func (p *Pagination) GetOffset() int {  
@@ -67,8 +67,8 @@ func (p *Pagination) GetSort() []string {
 
 func InitPagination(ctx echo.Context, db *gorm.DB) *Pagination {
 	pagination := Pagination{
-		Db: db,
-	}
+        QuerySet: db,
+    }
 	defaults.SetDefaults(&pagination)
 
 	page, _ := strconv.Atoi(ctx.QueryParam("page"))
@@ -132,7 +132,7 @@ func (p *Pagination) SortQuery(results interface{}) []string {
     }
     // Apply validated sort clauses
     for _, sortClause := range validSortClauses {
-        p.Db = p.Db.Order(sortClause)
+        p.QuerySet = p.QuerySet.Order(sortClause)
     }
     return validSortClauses
 }
@@ -140,7 +140,7 @@ func (p *Pagination) SortQuery(results interface{}) []string {
 func (p *Pagination) PaginateQuery(results interface{}) {
     
     var totalRows int64
-    p.Db.Model(results).Count(&totalRows)
+    p.QuerySet.Model(results).Count(&totalRows)
     p.TotalRows = totalRows
     totalPages := int(totalRows/int64(p.PageSize)) + 1
     if totalRows <= 1 {
@@ -150,35 +150,18 @@ func (p *Pagination) PaginateQuery(results interface{}) {
     offset := (p.Page - 1) * p.PageSize
     sortClauses := p.SortQuery(results)
     p.Sort = strings.Join(sortClauses, ",")
-    p.Db.Offset(offset).Limit(p.PageSize).Find(results)
-    p.Data = results
+    p.QuerySet.Offset(offset).Limit(p.PageSize).Find(results)
+    p.Results = results
 }
 
-func (p *Pagination) GetPaginatedResponse() *PaginatedResponse {
-	status := true
-	message := "Data Found."
-	if p.TotalRows == 0 {
-		status = false
-		message = "Data Not Found."
-	}
-	return &PaginatedResponse{
-		Status:  status,
-		Message: message,
-		Data:    p.Data,
-		Pagination: Pagination{
-			Page:       p.Page,
-			PageSize:   p.PageSize,
-			Sort:       p.Sort,
-			TotalRows:  p.TotalRows,
-			TotalPages: p.TotalPages,
-		},
-	}
+func (p *Pagination) GetPaginatedResponse() *Pagination {
+	return p
 }
 
 
 func Paginate(value interface{}, pagination *Pagination) func(db *gorm.DB) *gorm.DB {  
     var totalRows int64 
-    pagination.Db.Model(value).Count(&totalRows)   
+    pagination.QuerySet.Model(value).Count(&totalRows)   
     pagination.TotalRows = totalRows 
     totalPages := int(math.Ceil(float64(totalRows) / float64(pagination.PageSize)))
     pagination.TotalPages = totalPages  

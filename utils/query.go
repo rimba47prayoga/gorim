@@ -11,9 +11,9 @@ func GetObjectOr404[T any](queryset *gorm.DB, query string, args ...interface{})
     
     if err := queryset.Where(query, args...).First(&result).Error; err != nil {
         if err == gorm.ErrRecordNotFound {
-            panic(&errors.ObjectNotFoundError{Message: "Resource not found"})
+            errors.Raise(&errors.ObjectNotFoundError{Message: "Resource not found"})
         } else {
-            panic(&errors.InternalServerError{Message: err.Error()})
+            errors.Raise(&errors.InternalServerError{Message: err.Error()})
         }
     }
     

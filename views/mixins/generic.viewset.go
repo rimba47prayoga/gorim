@@ -1,14 +1,15 @@
 package mixins
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/rimba47prayoga/gorim.git"
 	"github.com/rimba47prayoga/gorim.git/conf"
 	"github.com/rimba47prayoga/gorim.git/errors"
 	"github.com/rimba47prayoga/gorim.git/filters"
+	"github.com/rimba47prayoga/gorim.git/interfaces"
 	"github.com/rimba47prayoga/gorim.git/pagination"
-	"github.com/rimba47prayoga/gorim.git/permissions"
 	"github.com/rimba47prayoga/gorim.git/serializers"
 	"github.com/rimba47prayoga/gorim.git/utils"
 	"gorm.io/gorm"
@@ -31,7 +32,7 @@ type GenericViewSetParams[T any] struct {
 	PKField			string
 	Serializer		serializers.IModelSerializer[T]
 	Filter			filters.IFilterSet
-	Permissions		[]permissions.IPermission
+	Permissions		[]interfaces.IPermission
 	Child			IGenericViewSet[T]
 }
 
@@ -42,7 +43,7 @@ type GenericViewSet[T any] struct {
 	PKField			string
 	Serializer		serializers.IModelSerializer[T]
 	Filter			filters.IFilterSet
-	Permissions		[]permissions.IPermission
+	Permissions		[]interfaces.IPermission
 	Action			string
 	Context			gorim.Context
 	Child			IGenericViewSet[T]
@@ -73,7 +74,7 @@ func (h *GenericViewSet[T]) GetPKField() string {
 	return h.PKField
 }
 
-func (h *GenericViewSet[T]) GetPermissions(c gorim.Context) []permissions.IPermission {
+func (h *GenericViewSet[T]) GetPermissions(c gorim.Context) []interfaces.IPermission {
 	return h.Permissions
 }
 
@@ -86,6 +87,9 @@ func (h *GenericViewSet[T]) HasPermission(c gorim.Context) bool {
 	}
 	return true
 }
+
+// TODO: move validation from router to here.
+func (h *GenericViewSet[T]) CheckPermission() {}
 
 
 func (h *GenericViewSet[T]) SetContext(c gorim.Context) {
@@ -102,7 +106,7 @@ func(h *GenericViewSet[T]) SetupSerializer(
 ) *serializers.IModelSerializer[T] {
 	serializer.SetContext(h.Context)
 	if err := h.Context.Bind(&serializer); err != nil {
-		panic(&errors.InternalServerError{
+		errors.Raise(&errors.InternalServerError{
 			Message: err.Error(),
 		})
 	}
@@ -127,10 +131,19 @@ func (h *GenericViewSet[T]) GetQuerySet() *gorm.DB {
 }
 
 func (h *GenericViewSet[T]) GetObject() *T {
+	pk := h.Context.Param("pk")
+	if pk == "" {
+		msg := fmt.Sprintf(
+			"Cannot call GetObject in action: %s, param does not exists.",
+			h.Action,
+		)
+		errors.Raise(&errors.InternalServerError{
+			Message: msg,
+		})
+	}
 	pkField := h.GetPKField()
-	id := h.Context.Param("pk")
 	queryset := h.GetQuerySet()
-	result := utils.GetObjectOr404[T](queryset, pkField + " = ?", id)
+	result := utils.GetObjectOr404[T](queryset, pkField + " = ?", pk)
 	return result
 }
 

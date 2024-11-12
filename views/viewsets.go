@@ -2,7 +2,7 @@ package views
 
 import (
 	"github.com/rimba47prayoga/gorim.git/filters"
-	"github.com/rimba47prayoga/gorim.git/permissions"
+	"github.com/rimba47prayoga/gorim.git/interfaces"
 	"github.com/rimba47prayoga/gorim.git/serializers"
 	"github.com/rimba47prayoga/gorim.git/views/mixins"
 	"gorm.io/gorm"
@@ -13,7 +13,7 @@ type ModelViewSetParams[T any] struct {
 	PKField			string
 	Serializer		serializers.IModelSerializer[T]
 	Filter			filters.IFilterSet
-	Permissions		[]permissions.IPermission
+	Permissions		[]interfaces.IPermission
 	Child			mixins.IGenericViewSet[T]
 }
 
