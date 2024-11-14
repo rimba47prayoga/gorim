@@ -25,6 +25,8 @@ var PORT uint = 8000
 
 var MigrationInstance interfaces.IMigrations
 
+var Configure func()
+
 func UseEnv(path string) {
 	err := godotenv.Load(path)
 	if err != nil {

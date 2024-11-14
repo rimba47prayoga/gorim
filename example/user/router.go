@@ -10,5 +10,5 @@ import (
 func RouterUser(group *gorim.Group) {
 	routeGroup := group.Group("/users")
 	userRoute := routers.NewDefaultRouter[*UserViewSet](routeGroup, NewUserViewSet)
-	userRoute.RegisterFunc("Profile", http.MethodPost, "/:pk/profile")
+	userRoute.RegisterFunc("UpdateProfile", http.MethodPost, "/profile")
 }

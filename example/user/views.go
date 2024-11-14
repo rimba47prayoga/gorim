@@ -64,7 +64,6 @@ func (h *UserViewSet) GetSerializerStruct() serializers.IModelSerializer[models.
 
 func (h *UserViewSet) UpdateProfile(ctx gorim.Context) error {
 	profile := h.GetObject()
-
 	serializer := *h.GetSerializer()
 	if !serializer.IsValid() {
 		return ctx.JSON(http.StatusBadRequest, gorim.Response{

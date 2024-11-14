@@ -14,6 +14,10 @@ func (g *Group) Group(prefix string, middleware ...echo.MiddlewareFunc) *Group {
 	}
 }
 
+func (g *Group) Use(middleware ...echo.MiddlewareFunc) {
+	g.EchoGroup.Use(middleware...)
+}
+
 // Add implements `Echo#Add()` for sub-routes within the Group.
 func (g *Group) Add(method string, path string, handler HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route {
 	// Combine into a new slice to avoid accidentally passing the same slice for

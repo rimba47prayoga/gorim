@@ -1,6 +1,8 @@
 package gorim
 
 import (
+	"context"
+
 	"github.com/labstack/echo/v4"
 	"github.com/rimba47prayoga/gorim.git/middlewares"
 )
@@ -14,6 +16,10 @@ func (s *Server) Start(address string) error {
 	return s.Echo.Start(address)
 }
 
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.Echo.Shutdown(ctx)
+}
+
 // Group creates a new Gorim route group
 func (s *Server) Group(prefix string, middleware ...echo.MiddlewareFunc) *Group {
     g := s.Echo.Group(prefix, middleware...)
@@ -25,6 +31,10 @@ func (s *Server) Group(prefix string, middleware ...echo.MiddlewareFunc) *Group 
 
 // HandlerFunc is a custom function type for handling requests
 type HandlerFunc func(Context) error
+
+func (s *Server) Routes() []*echo.Route {
+	return s.Echo.Routes()
+}
 
 // AddRoute registers a new route with the specified method, path, and handler
 func (s *Server) AddRoute(method string, path string, handler HandlerFunc) {

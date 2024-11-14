@@ -9,6 +9,7 @@ import (
 
 
 func main() {	
+	//
 	settings.Configure()
 	api.APIRoutes()
 	cmd.Execute()

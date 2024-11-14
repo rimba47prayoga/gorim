@@ -24,4 +24,10 @@ func init() {
 			Func: MigrationInstance.RunGo(FillSlug),
 		},
 	)
+	MigrationInstance.AddOperation(
+		migrations.Operation{
+			Name: "add_uuid_extensions",
+			Func: MigrationInstance.RunGo(AddUuidExtensions),
+		},
+	)
 }
