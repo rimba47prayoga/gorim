@@ -9,7 +9,6 @@ import (
 	"github.com/rimba47prayoga/gorim.git/models"
 	"github.com/rimba47prayoga/gorim.git/permissions"
 	"github.com/rimba47prayoga/gorim.git/serializers"
-	"github.com/rimba47prayoga/gorim.git/utils"
 	"github.com/rimba47prayoga/gorim.git/views"
 	"github.com/rimba47prayoga/gorim.git/views/mixins"
 )
@@ -63,13 +62,13 @@ func (h *UserViewSet) GetPermissions(c gorim.Context) []interfaces.IPermission {
 	return h.GenericViewSet.GetPermissions(c)
 }
 
-func (h *UserViewSet) GetObject() *models.User {
-	if h.Action == "Profile" {
-		queryset := h.GetQuerySet().Preload("Profile")
-		return utils.GetObjectOr404[models.User](queryset, "id = ?", h.Context.Param("pk"))
-	}
-	return h.GenericViewSet.GetObject()
-}
+// func (h *UserViewSet) GetObject() *models.User {
+// 	if h.Action == "Profile" {
+// 		queryset := h.GetQuerySet().Preload("Profile")
+// 		return utils.GetObjectOr404[models.User](queryset, "id = ?", h.Context.Param("pk"))
+// 	}
+// 	return h.GenericViewSet.GetObject()
+// }
 
 func (h *UserViewSet) List(ctx gorim.Context) error {
 	fmt.Println(h.GetPermissions(ctx))

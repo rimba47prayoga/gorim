@@ -136,7 +136,6 @@ func (h *GenericViewSet[T]) GetQuerySet() *gorm.DB {
 
 func (h *GenericViewSet[T]) GetObject() *T {
 	pk := h.Context.Param("pk")
-	fmt.Println("PK: ", pk)
 	if pk == "" {
 		msg := fmt.Sprintf(
 			"Cannot call GetObject in action: %s, param does not exists.",
