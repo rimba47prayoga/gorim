@@ -7,7 +7,9 @@ import (
 
 	"github.com/rimba47prayoga/gorim.git"
 	"github.com/rimba47prayoga/gorim.git/conf"
+	"github.com/rimba47prayoga/gorim.git/interfaces"
 	"github.com/rimba47prayoga/gorim.git/middlewares"
+	"github.com/rimba47prayoga/gorim.git/permissions"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -47,7 +49,11 @@ func SetupDatabase() *gorm.DB {
 }
 
 func SetupMiddlewares() {
-	Server.Use(middlewares.LoggerMiddleware)
+	Server.Use(&middlewares.LoggerMiddleware{})
+	// add other middlewares here.
+
+	// keep this at bottom.
+	Server.Use(&middlewares.RecoverMiddleware{})
 }
 
 func Configure() {
@@ -66,6 +72,10 @@ func Configure() {
 	Server = gorim.New()
 	db := SetupDatabase()
 	SetupMiddlewares()
+
+	conf.DEFAULT_PERMISSION_STRUCTS = []interfaces.IPermission{
+		&permissions.AllowAny{},
+	}
 
 	// its for gorim settings.
 	conf.DB = db

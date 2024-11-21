@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/rimba47prayoga/gorim.git"
 	"github.com/rimba47prayoga/gorim.git/interfaces"
@@ -37,9 +38,23 @@ func(r *DefaultRouter[T]) RegisterFunc(name string, httpMethod string, path stri
 	r.HandleRoute(httpMethod, path, name)
 }
 
+func (r *DefaultRouter[T]) PathConverter(path string) string {
+    // Replace <int:parameter> with :parameter([0-9]+)
+    path = strings.ReplaceAll(path, "<int:", ":")
+    path = strings.ReplaceAll(path, ">", "([0-9]+)")
+
+    // Replace <uuid:parameter> with :parameter([0-9a-fA-F-]{36})
+    path = strings.ReplaceAll(path, "<uuid:", ":")
+    path = strings.ReplaceAll(path, ">", "([0-9a-fA-F-]{36})")
+
+    return path
+}
+
 // Helper function to handle common route logic
 func(r *DefaultRouter[T]) HandleRoute(method, path, action string) {
 
+	// path = r.PathConverter(path)
+	fmt.Println(path)
 	r.RouteGroup.Add(method, path, func(c gorim.Context) error {
 		handler := r.SetupHandler(action, c)
 		if !utils.HasAttr(handler, action) {
@@ -71,6 +86,7 @@ func(r *DefaultRouter[T]) HandleRoute(method, path, action string) {
 }
 
 func (r *DefaultRouter[T]) AutoDiscover() {
+	// TODO: user handler.GetPKField() to make dynamic parameter name
 	handler := r.HandlerFunc()
 	if utils.HasAttr(handler, "List") {
 		r.HandleRoute(http.MethodGet, "", "List")
@@ -79,7 +95,7 @@ func (r *DefaultRouter[T]) AutoDiscover() {
         r.HandleRoute(http.MethodPost, "", "Create")
     }
     if utils.HasAttr(handler, "Retrieve") {
-        r.HandleRoute(http.MethodGet, "/:pk", "Retrieve")
+        r.HandleRoute(http.MethodGet, "/:pk([0-9]+)", "Retrieve")
     }
     if utils.HasAttr(handler, "Update") {
         r.HandleRoute(http.MethodPut, "/:pk", "Update")

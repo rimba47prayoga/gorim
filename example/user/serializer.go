@@ -20,3 +20,7 @@ type UserProfileSerializer struct {
 func (s *UserProfileSerializer) ValidateUsername() {
 	s.AddError("username", "not valid")
 }
+
+func (s *UserProfileSerializer) Validate() {
+	s.ModelSerializer.Validate()
+}

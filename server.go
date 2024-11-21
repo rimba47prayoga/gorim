@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/labstack/echo/v4"
-	"github.com/rimba47prayoga/gorim.git/middlewares"
 )
 
 // Server represents the Gorim server
@@ -69,8 +68,23 @@ func (s *Server) OPTIONS(path string, handler HandlerFunc) {
     s.AddRoute(echo.OPTIONS, path, handler)
 }
 
-func (s *Server) Use(middleware ...echo.MiddlewareFunc) {
-	s.Echo.Use(middleware...)
+type IMiddleware interface {
+	Call(Context) error
+	SetNextFunc(HandlerFunc)
+}
+
+func (s *Server) Use(middlewares ...IMiddleware) {
+	for _, middleware := range middlewares {
+		s.Echo.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+			middleware.SetNextFunc(func(ctx Context) error {
+				return next(ctx.Context)
+			})
+			return func(c echo.Context) error {
+				ctx := NewContext(c)
+				return middleware.Call(ctx)
+			}
+		})
+	}
 }
 
 func New() *Server {
@@ -81,6 +95,5 @@ func New() *Server {
 	server := Server{
 		Echo: e,
 	}
-	e.Use(middlewares.RecoverMiddleware)
 	return &server
 }

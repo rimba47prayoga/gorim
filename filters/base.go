@@ -54,14 +54,13 @@ func (fs FilterSet) FilteredFields(filter interface{}) map[string]reflect.Value 
 }
 
 // ApplyFilters applies the filters dynamically using reflection, but only for fields returned by FilteredFields.
-func (fs FilterSet) ApplyFilters(filter interface{}, ctx echo.Context, db *gorm.DB) *gorm.DB {
+func (fs FilterSet) ApplyFilters(filter interface{}, ctx echo.Context, query *gorm.DB) *gorm.DB {
 	filteredFields := fs.FilteredFields(filter)
 	if len(filteredFields) == 0 {
 		// If no fields are set, return the original query without filtering
-		return db
+		return query
 	}
 
-	query := db
 	val := reflect.ValueOf(filter)
 	typ := val.Elem().Type()
 
@@ -89,18 +88,18 @@ func (fs FilterSet) ApplyFilters(filter interface{}, ctx echo.Context, db *gorm.
 		operator := fieldType.Tag.Get("operator")
 
 		switch operator {
-		case "in":
-			query = query.Where(dbName+" IN (?)", fieldVal.Interface())
-		case "eq":
-			query = query.Where(dbName+" = ?", fieldVal.Interface())
-		case "gte":
-			query = query.Where(dbName+" >= ?", fieldVal.Interface())
-		case "lte":
-			query = query.Where(dbName+" <= ?", fieldVal.Interface())
-		case "like":
-			query = query.Where(dbName+" LIKE ?", "%"+fieldVal.String()+"%")
-		case "ilike":
-			query = query.Where(dbName+" ILIKE ?", "%"+fieldVal.String()+"%")
+			case "in":
+				query = query.Where(dbName+" IN (?)", fieldVal.Interface())
+			case "eq":
+				query = query.Where(dbName+" = ?", fieldVal.Interface())
+			case "gte":
+				query = query.Where(dbName+" >= ?", fieldVal.Interface())
+			case "lte":
+				query = query.Where(dbName+" <= ?", fieldVal.Interface())
+			case "like":
+				query = query.Where(dbName+" LIKE ?", "%"+fieldVal.String()+"%")
+			case "ilike":
+				query = query.Where(dbName+" ILIKE ?", "%"+fieldVal.String()+"%")
 		}
 	}
 

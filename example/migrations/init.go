@@ -14,6 +14,12 @@ func init() {
 	}
 	MigrationInstance.AddOperation(
 		migrations.Operation{
+			Name: "add_uuid_extensions",
+			Func: MigrationInstance.RunGo(AddUuidExtensions),
+		},
+	)
+	MigrationInstance.AddOperation(
+		migrations.Operation{
 			Name: "migrate_models",
 			Func: MigrationInstance.RunMigrationModels(),
 		},
@@ -22,12 +28,6 @@ func init() {
 		migrations.Operation{
 			Name: "fill_slug",
 			Func: MigrationInstance.RunGo(FillSlug),
-		},
-	)
-	MigrationInstance.AddOperation(
-		migrations.Operation{
-			Name: "add_uuid_extensions",
-			Func: MigrationInstance.RunGo(AddUuidExtensions),
 		},
 	)
 }

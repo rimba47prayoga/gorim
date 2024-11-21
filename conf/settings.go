@@ -5,6 +5,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/rimba47prayoga/gorim.git/interfaces"
+	"github.com/rimba47prayoga/gorim.git/permissions"
 	"gorm.io/gorm"
 )
 
@@ -22,6 +23,9 @@ type Database struct {
 var ENV_PATH = ".env"
 var HOST = "http://localhost:8000/"
 var PORT uint = 8000
+var DEFAULT_PERMISSION_STRUCTS []interfaces.IPermission = []interfaces.IPermission{
+	&permissions.IsAuthenticated{},
+}
 
 var MigrationInstance interfaces.IMigrations
 

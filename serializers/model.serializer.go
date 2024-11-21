@@ -169,6 +169,11 @@ func (s *ModelSerializer[T]) Validate() {
 		s.HandleError(err)
 		return
 	}
+	s.ValidateField()
+}
+
+func (s *ModelSerializer[T]) ValidateField() {
+	serializer := s.child
 	serializerVal := reflect.ValueOf(serializer)
 	for _, field := range serializer.Fields() {
 		methodName := fmt.Sprintf("Validate%s", field)
