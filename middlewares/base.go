@@ -17,3 +17,7 @@ func (m *BaseMiddleware) Next(ctx gorim.Context) error {
 func (m *BaseMiddleware) Call(c gorim.Context) error {
 	panic("Call function must be implemented.")
 }
+
+type BaseAuthMiddleware struct {
+	BaseMiddleware
+}

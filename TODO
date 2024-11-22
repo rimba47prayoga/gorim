@@ -4,10 +4,16 @@
 - ADD: middleware for authentication without forbidden response if there's no Auth header, because it will be handle by permissions. But still checking if there's auth header, check if valid or not or expired, then response 401.
 - Make BaseAuthMiddleware that can be adjust for custom user model, add method GetModel()
 - ADD: settings variable: DEFAULT_PERMISSION_STRUCT
-- Make AbstractUser struct that will have methods: SetPassword, CheckPassword
+- ADD: AbstractUser struct that will have methods: SetPassword, CheckPassword
 - ADD: auto_reload feature.
 - ADD: settings.DEBUG, if true.. then auto_reload feature is on.
 - ADD: logging in terminal for request in.
 - ADD: gorim_migrations table for tracking migrations by versioning migration with hash from all models.
        table contains: name, version, created_at
 - FIX: when call errors.Raise log request does not show
+- ADD: BaseAuthMiddleware
+- ADD: warning at runserver if there is unapplied migrations.
+- ADD: Hot reload: make watch directory as main process, make goroutine to runserver as child process
+       restart: kill goroutine process, and run again. If errors, try to make --noreload arguments 
+       then make goroutine and call cmd runserver with --noreload arguments to avoid multiple main 
+       process watch directory.
