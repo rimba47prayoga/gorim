@@ -4,8 +4,12 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
+	"github.com/labstack/gommon/color"
+	"github.com/rimba47prayoga/gorim.git/conf"
 	"github.com/spf13/cobra"
 )
 
@@ -27,6 +31,34 @@ to quickly create a Cobra application.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	// Check if arguments are passed and are not "migrate"
+	shouldCheckMigration := false
+	if len(os.Args) > 1 {
+		firstArgs := os.Args[1]
+		if firstArgs != "migrate" {
+			if firstArgs == "runserver" {
+				if os.Args[len(os.Args) - 1] == "--nomigrationcheck" {
+					shouldCheckMigration = false
+				} else {
+					shouldCheckMigration = true
+				}
+			} else {
+				shouldCheckMigration = true
+			}
+		}
+	}
+	if shouldCheckMigration {
+		isChanged, _ := conf.MigrationInstance.HasChanges() 
+		if isChanged {
+			msg := strings.TrimSpace(`
+				You have unapplied migration(s). Your project may not work properly until you apply the migrations.
+				Run 'go run main.go migrate' to apply them.
+			`)
+			msg = strings.ReplaceAll(msg, "\t\t", "")
+			msg = strings.TrimSpace(msg) // Clean up leading/trailing spaces
+			fmt.Println(color.Red(msg))
+		}
+	}
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -43,10 +75,6 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	
-
-	
 }
 
 

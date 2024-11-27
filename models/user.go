@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	BaseModel
-	Username	string			`gorm:"type:varchar(255)" json:"username"`
+	// Username	string			`gorm:"type:varchar(255)" json:"username"`
 	Email		string			`gorm:"type:varchar(255)" json:"email"`
 	Password	string			`gorm:"type:varchar(255)" json:"password"`
 }

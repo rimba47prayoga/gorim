@@ -40,6 +40,7 @@ var runserverCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(runserverCmd)
 	runserverCmd.Flags().Bool("noreload", false, "Run the server without hot reload")
+    runserverCmd.Flags().Bool("nomigrationcheck", false, "Run the server without check migration")
 }
 
 func runServerWithHotReload() {
@@ -68,35 +69,37 @@ func runServerWithHotReload() {
     go func() {
         for {
             select {
-            case event, ok := <-watcher.Events:
-                if !ok {
-                    return
-                }
-                // Check if the file is modified, renamed, or created
-                if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Rename == fsnotify.Rename || event.Op&fsnotify.Create == fsnotify.Create {
-                    fmt.Println("Detected file change:", event.Name)
+				case event, ok := <-watcher.Events:
+					if !ok {
+						return
+					}
+					// Check if the file is modified, renamed, or created
+					if event.Op&fsnotify.Write == fsnotify.Write || 
+					event.Op&fsnotify.Rename == fsnotify.Rename || 
+					event.Op&fsnotify.Create == fsnotify.Create {
+						fmt.Println("Detected file change:", event.Name)
 
-                    // If a new directory is created, start watching it recursively
-                    fileInfo, err := os.Stat(event.Name)
-                    if err == nil && fileInfo.IsDir() {
-                        if err := watchRecursive(event.Name, watcher); err != nil {
-                            log.Printf("Error watching new directory: %s\n", err)
-                        }
-                    }
+						// If a new directory is created, start watching it recursively
+						fileInfo, err := os.Stat(event.Name)
+						if err == nil && fileInfo.IsDir() {
+							if err := watchRecursive(event.Name, watcher); err != nil {
+								log.Printf("Error watching new directory: %s\n", err)
+							}
+						}
 
-                    restartServer() // Restart the server on file change
-                }
+						restartServer() // Restart the server on file change
+					}
 
-            case err, ok := <-watcher.Errors:
-                if !ok {
-                    return
-                }
-                log.Println("Error:", err)
+				case err, ok := <-watcher.Errors:
+					if !ok {
+						return
+					}
+					log.Println("Error:", err)
 
-            case <-signalChan:
-                fmt.Println("Received interrupt, shutting down...")
-                stopServer()
-                done <- true
+				case <-signalChan:
+					fmt.Println("Received interrupt, shutting down...")
+					stopServer()
+					done <- true
             }
         }
     }()
@@ -106,7 +109,7 @@ func runServerWithHotReload() {
 
 // Start the server by running `go run main.go`
 func startServer() {
-    cmd = exec.Command("go", "run", "main.go", "runserver", "--noreload")
+    cmd = exec.Command("go", "run", "main.go", "runserver", "--noreload", "--nomigrationcheck")
     cmd.Stdout = os.Stdout
     cmd.Stderr = os.Stderr
 
@@ -186,7 +189,7 @@ func startGorimServer() {
 	server := conf.GorimServer.(*gorim.Server)
     address := fmt.Sprintf("%s:%d", conf.HOST, conf.PORT)
     versionNumber := "v1.1.0"
-    printBanner(versionNumber, conf.ENV_PATH, conf.HOST)
+    printBanner(versionNumber, conf.ENV_PATH, fmt.Sprintf("http://%s/", address))
 
     go func() {
         if err := server.Start(address); err != nil && err != http.ErrServerClosed {

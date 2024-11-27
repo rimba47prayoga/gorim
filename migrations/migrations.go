@@ -9,8 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/labstack/gommon/color"
 	"github.com/rimba47prayoga/gorim.git/conf"
+	"github.com/rimba47prayoga/gorim.git/utils"
 )
+
+var MIGRATE_MODELS string = "migrate_models"
 
 type Operation struct {
 	Name	string
@@ -20,12 +24,12 @@ type Operation struct {
 type Migrations struct {
 	Models		[]interface{}
 	Operations	[]Operation
-	hasChanges	bool
+	// hasChanges	bool
 }
 
 func (m *Migrations) CreateMigrationTable() {
 	var migrationTable GorimMigrations
-	if !conf.DB.Migrator().HasTable(&migrationTable) {
+	if !m.HasTableMigrations() {
 		// Create the table if it doesn't exist
 		err := conf.DB.Migrator().CreateTable(&migrationTable);
 		if err != nil {
@@ -69,8 +73,8 @@ func (m *Migrations) GenerateHash() string {
     return hex.EncodeToString(hash[:])
 }
 
-func (m *Migrations) AddOperation(operation Operation) {
-	m.Operations = append(m.Operations, operation)
+func (m *Migrations) AddOperation(operation ...Operation) {
+	m.Operations = append(m.Operations, operation...)
 }
 
 func (m *Migrations) MigrateModels() {
@@ -80,6 +84,64 @@ func (m *Migrations) MigrateModels() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (m *Migrations) GetOperationNames() []string {
+	var names []string
+	for _, operation := range m.Operations {
+		names = append(names, operation.Name)
+	}
+	return names
+}
+
+func (m *Migrations) GetUnAppliedMigrations() []string {
+	var appliedMigrations []string
+	err := conf.DB.
+		Model(&GorimMigrations{}).
+		Pluck("name", &appliedMigrations).
+		Error
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	unAppliedMigrations := []string{}
+	for _, name := range m.GetOperationNames() {
+		// Check if the migration name is not in the applied migrations list
+		found := false
+		for _, applied := range appliedMigrations {
+			if name == applied {
+				found = true
+				break
+			}
+		}
+		if !found {
+			unAppliedMigrations = append(unAppliedMigrations, name)
+		}
+	}
+	return unAppliedMigrations
+}
+
+func (m *Migrations) HasTableMigrations() bool {
+    return conf.DB.Migrator().HasTable(&GorimMigrations{}) 
+}
+
+func (m *Migrations) HasChanges() (bool, []string) {
+	if !m.HasTableMigrations() {
+		return true, m.GetOperationNames()
+	}
+	var migration GorimMigrations
+	var unAppliedMigrations []string
+	err := conf.DB.Where("name = ?", MIGRATE_MODELS).First(&migration).Error
+	if err != nil {
+		unAppliedMigrations = append(unAppliedMigrations, MIGRATE_MODELS)
+	} else {
+		hashVersion := m.GenerateHash()
+		if hashVersion != migration.Version {
+			unAppliedMigrations = append(unAppliedMigrations, MIGRATE_MODELS)
+		}
+	}
+	unAppliedMigrations = append(unAppliedMigrations, m.GetUnAppliedMigrations()...)
+	return len(unAppliedMigrations) > 0, unAppliedMigrations
 }
 
 func (m *Migrations) RunMigrationModels() func(string) error {
@@ -97,20 +159,14 @@ func (m *Migrations) RunMigrationModels() func(string) error {
 				CreatedAt: time.Now(),
 			}
 			conf.DB.Create(&migration)
-			m.hasChanges = true
-			fmt.Println("Models successfully migrated.")
 			return nil
 		}
 		if migration.Version != hashVersion {
-			fmt.Println("Applying new migration..")
 			m.MigrateModels()
 			migration.Version = hashVersion
 			now := time.Now()
 			migration.UpdatedAt = &now
 			conf.DB.Save(&migration)
-			m.hasChanges = true
-			fmt.Println("Models successfully migrated.")
-			fmt.Printf("Current version: %s\n", hashVersion)
 			return nil
 		}
 		return nil
@@ -128,26 +184,50 @@ func (m *Migrations) RunGo(callable func() error) func(string) error {
 		}
 		err = callable()
 		if err != nil {
-			fmt.Printf("Failed to run migration: %s\n", name)
-			log.Fatal(err.Error())
+			return err
 		}
 		migration = GorimMigrations{
 			Name: name,
 			CreatedAt: time.Now(),
 		}
 		conf.DB.Create(&migration)
-		m.hasChanges = true
-		fmt.Printf("%s migration applied\n", name)
 		return nil
+	}
+}
+
+// Apply method executes a migration operation and prints status
+func (m *Migrations) Apply(operation Operation) {
+	// Call the operation function
+	err := operation.Func(operation.Name)
+	if err != nil {
+		// If there is an error, print it (failed migration) in red
+		fmt.Printf("  Applying %s... %s\n", operation.Name, color.Red("FAILED", color.B))
+		log.Printf("Error: %v\n", err) // Log the error with details
+	} else {
+		// If no error, print success (mimicking Django's "OK") in green
+		fmt.Printf("  Applying %s... %s\n", operation.Name, color.Green("OK", color.B))
+	}
+}
+
+// Applies method iterates through the operations and applies each
+func (m *Migrations) Applies(unApplied []string) {
+	// Print the 'Running migrations:' header
+	fmt.Println(color.Cyan("Running migrations:", color.B))
+
+	// Apply each migration operation
+	for _, operation := range m.Operations {
+		if utils.Contains(unApplied, operation.Name) {
+			m.Apply(operation)
+		}
 	}
 }
 
 func (m *Migrations) Run() {
 	m.CreateMigrationTable()
-	for _, operation := range m.Operations {
-		operation.Func(operation.Name)
-	}
-	if !m.hasChanges {
+	isChanged, unApplied := m.HasChanges()
+	if isChanged {
+		m.Applies(unApplied)
+	} else {
 		fmt.Println("No changes detected.")
 	}
 }
