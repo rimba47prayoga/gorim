@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/rimba47prayoga/gorim.git/errors"
-	"github.com/rimba47prayoga/gorim.git/utils"
+	"gorim.org/gorim/errors"
+	"gorim.org/gorim/utils"
 )
 
 

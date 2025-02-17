@@ -3,7 +3,7 @@ package mixins
 import (
 	"net/http"
 
-	"github.com/rimba47prayoga/gorim.git"
+	"gorim.org/gorim"
 )
 
 

@@ -1,8 +1,8 @@
 package migrations
 
 import (
-	"github.com/rimba47prayoga/gorim.git/migrations"
-	"github.com/rimba47prayoga/gorim.git/models"
+	"gorim.org/gorim/migrations"
+	"gorim.org/gorim/models"
 )
 
 var MigrationInstance *migrations.Migrations

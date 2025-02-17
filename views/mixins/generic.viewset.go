@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/rimba47prayoga/gorim.git"
-	"github.com/rimba47prayoga/gorim.git/conf"
-	"github.com/rimba47prayoga/gorim.git/errors"
-	"github.com/rimba47prayoga/gorim.git/filters"
-	"github.com/rimba47prayoga/gorim.git/interfaces"
-	"github.com/rimba47prayoga/gorim.git/pagination"
-	"github.com/rimba47prayoga/gorim.git/serializers"
-	"github.com/rimba47prayoga/gorim.git/utils"
+	"gorim.org/gorim"
+	"gorim.org/gorim/conf"
+	"gorim.org/gorim/errors"
+	"gorim.org/gorim/filters"
+	"gorim.org/gorim/interfaces"
+	"gorim.org/gorim/pagination"
+	"gorim.org/gorim/serializers"
+	"gorim.org/gorim/utils"
 	"gorm.io/gorm"
 )
 

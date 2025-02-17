@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rimba47prayoga/gorim.git"
+	"gorim.org/gorim"
 )
 
 type LoggerMiddleware struct {

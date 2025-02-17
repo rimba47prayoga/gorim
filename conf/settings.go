@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/rimba47prayoga/gorim.git/interfaces"
-	"github.com/rimba47prayoga/gorim.git/permissions"
+	"gorim.org/gorim/interfaces"
+	"gorim.org/gorim/permissions"
 	"gorm.io/gorm"
 )
 
@@ -26,6 +26,7 @@ var PORT uint = 8000
 var DEFAULT_PERMISSION_STRUCTS []interfaces.IPermission = []interfaces.IPermission{
 	&permissions.IsAuthenticated{},
 }
+var ALLOWED_HOSTS []string = []string{"localhost"}
 
 var MigrationInstance interfaces.IMigrations
 

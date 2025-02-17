@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/rimba47prayoga/gorim.git/errors"
+	"gorim.org/gorim/errors"
 	"gorm.io/gorm"
 )
 

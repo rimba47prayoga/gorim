@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/rimba47prayoga/gorim.git"
-	"github.com/rimba47prayoga/gorim.git/interfaces"
-	"github.com/rimba47prayoga/gorim.git/utils"
+	"gorim.org/gorim"
+	"gorim.org/gorim/interfaces"
+	"gorim.org/gorim/utils"
 )
 
 

@@ -2,7 +2,7 @@ package interfaces
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/rimba47prayoga/gorim.git"
+	"gorim.org/gorim"
 )
 
 type IMiddleware interface {

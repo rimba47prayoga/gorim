@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/labstack/gommon/color"
-	"github.com/rimba47prayoga/gorim.git/conf"
 	"github.com/spf13/cobra"
+	"gorim.org/gorim/conf"
 )
 
 // rootCmd represents the base command when called without any subcommands

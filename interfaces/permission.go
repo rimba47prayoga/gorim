@@ -1,6 +1,6 @@
 package interfaces
 
-import "github.com/rimba47prayoga/gorim.git"
+import "gorim.org/gorim"
 
 type IPermission interface {
 	HasPermission(gorim.Context) bool

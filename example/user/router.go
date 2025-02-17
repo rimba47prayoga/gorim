@@ -3,8 +3,8 @@ package user
 import (
 	"net/http"
 
-	"github.com/rimba47prayoga/gorim.git"
-	"github.com/rimba47prayoga/gorim.git/routers"
+	"gorim.org/gorim"
+	"gorim.org/gorim/routers"
 )
 
 func RouterUser(group *gorim.Group) {

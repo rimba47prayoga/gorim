@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rimba47prayoga/gorim.git"
-	"github.com/rimba47prayoga/gorim.git/conf"
-	"github.com/rimba47prayoga/gorim.git/interfaces"
-	"github.com/rimba47prayoga/gorim.git/middlewares"
-	"github.com/rimba47prayoga/gorim.git/permissions"
+	"gorim.org/gorim"
+	"gorim.org/gorim/conf"
+	"gorim.org/gorim/interfaces"
+	"gorim.org/gorim/middlewares"
+	"gorim.org/gorim/permissions"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -18,6 +18,8 @@ import (
 var CONFIGURED bool
 
 var DEBUG bool
+
+var ALLOWED_HOSTS []string = []string{"localhost"}
 
 var DATABASE conf.Database
 
@@ -50,6 +52,7 @@ func SetupDatabase() *gorm.DB {
 
 func SetupMiddlewares() {
 	Server.Use(&middlewares.LoggerMiddleware{})
+	Server.Use(&middlewares.AllowedHostsMiddleware{})
 	// add other middlewares here.
 
 	// keep this at bottom.
@@ -67,7 +70,7 @@ func Configure() {
 		User: "rimbaprayoga",
 		Password: "qweqweqwe",
 	}
-	HOST = "localhost"
+	HOST = "127.0.0.1"
 	PORT = 8000
 	Server = gorim.New()
 	db := SetupDatabase()
@@ -76,6 +79,7 @@ func Configure() {
 	conf.DEFAULT_PERMISSION_STRUCTS = []interfaces.IPermission{
 		&permissions.AllowAny{},
 	}
+	conf.ALLOWED_HOSTS = ALLOWED_HOSTS
 
 	// its for gorim settings.
 	conf.DB = db

@@ -7,9 +7,9 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/rimba47prayoga/gorim.git/conf"
-	"github.com/rimba47prayoga/gorim.git/errors"
-	"github.com/rimba47prayoga/gorim.git/utils"
+	"gorim.org/gorim/conf"
+	"gorim.org/gorim/errors"
+	"gorim.org/gorim/utils"
 	"gorm.io/gorm"
 )
 

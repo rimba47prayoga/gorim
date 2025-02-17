@@ -1,10 +1,10 @@
 package views
 
 import (
-	"github.com/rimba47prayoga/gorim.git/filters"
-	"github.com/rimba47prayoga/gorim.git/interfaces"
-	"github.com/rimba47prayoga/gorim.git/serializers"
-	"github.com/rimba47prayoga/gorim.git/views/mixins"
+	"gorim.org/gorim/filters"
+	"gorim.org/gorim/interfaces"
+	"gorim.org/gorim/serializers"
+	"gorim.org/gorim/views/mixins"
 	"gorm.io/gorm"
 )
 

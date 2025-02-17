@@ -9,9 +9,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mcuadros/go-defaults"
-	"github.com/rimba47prayoga/gorim.git/errors"
-	"github.com/rimba47prayoga/gorim.git/models"
-	"github.com/rimba47prayoga/gorim.git/utils"
+	"gorim.org/gorim/errors"
+	"gorim.org/gorim/models"
+	"gorim.org/gorim/utils"
 	"gorm.io/gorm"
 )
 

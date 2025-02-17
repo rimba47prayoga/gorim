@@ -17,3 +17,4 @@
        restart: kill goroutine process, and run again. If errors, try to make --noreload arguments 
        then make goroutine and call cmd runserver with --noreload arguments to avoid multiple main 
        process watch directory.
+- ADD: to support nested serializers (run .Validate(), .Create() / .Update() in child serializer)

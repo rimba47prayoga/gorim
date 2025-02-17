@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/rimba47prayoga/gorim.git"
-	"github.com/rimba47prayoga/gorim.git/conf"
 	"github.com/spf13/cobra"
+	"gorim.org/gorim"
+	"gorim.org/gorim/conf"
 )
 
 var cmd *exec.Cmd
@@ -52,12 +52,15 @@ func runServerWithHotReload() {
     defer watcher.Close()
 
     // Watch the current directory and its subdirectories
+    watchingMsg := "Watching for file changes with fsnotify"
+    fmt.Println(watchingMsg)
+    fmt.Println("Performing system checks...")
     if err := watchRecursive(".", watcher); err != nil {
         log.Fatal(err)
     }
 
     // Start the server for the first time
-    startServer()
+    startServer(false)
 
     // Signal channel to listen for termination (CTRL+C) and exit cleanly
     signalChan := make(chan os.Signal, 1)
@@ -75,8 +78,8 @@ func runServerWithHotReload() {
 					}
 					// Check if the file is modified, renamed, or created
 					if event.Op&fsnotify.Write == fsnotify.Write || 
-					event.Op&fsnotify.Rename == fsnotify.Rename || 
-					event.Op&fsnotify.Create == fsnotify.Create {
+                    event.Op&fsnotify.Rename == fsnotify.Rename || 
+                    event.Op&fsnotify.Create == fsnotify.Create {
 						fmt.Println("Detected file change:", event.Name)
 
 						// If a new directory is created, start watching it recursively
@@ -107,9 +110,17 @@ func runServerWithHotReload() {
     <-done
 }
 
-// Start the server by running `go run main.go`
-func startServer() {
-    cmd = exec.Command("go", "run", "main.go", "runserver", "--noreload", "--nomigrationcheck")
+func startServer(checkMigrations bool) {
+    // Create a slice to hold the command arguments
+    cmdArgs := []string{"run", "main.go", "runserver", "--noreload"}
+
+    // Add --nomigrationcheck only if checkMigrations is true
+    if !checkMigrations {
+        cmdArgs = append(cmdArgs, "--nomigrationcheck")
+    }
+
+    // Create the command with the arguments
+    cmd = exec.Command("go", cmdArgs...)
     cmd.Stdout = os.Stdout
     cmd.Stderr = os.Stderr
 
@@ -118,19 +129,19 @@ func startServer() {
         fmt.Printf("Error starting server: %s\n", err)
         return
     }
-
     // fmt.Printf("Server running with PID %d\n", cmd.Process.Pid)
 }
 
 // Stop the running server by killing the process
 func stopServer() {
     if cmd != nil && cmd.Process != nil {
-        fmt.Println("Stopping server...")
+        // fmt.Println("Stopping server...")
 		killProcessAndChildren(cmd.Process.Pid)
-
         cmd = nil
         // Ensure the port is released
         time.Sleep(1 * time.Second)
+    } else {
+        log.Fatal("Failed to stop server: cmd is nil")
     }
 }
 
@@ -138,7 +149,7 @@ func stopServer() {
 func restartServer() {
     stopServer()
     // Check if the port is still in use
-    startServer()
+    startServer(true)
 }
 
 // Recursively watch directories and subdirectories
@@ -177,6 +188,7 @@ func printBanner(version string, env string, host string) {
 	now := time.Now().Format("January 02, 2006 - 15:04:05")
 
 	// Banner content
+    fmt.Println()
 	fmt.Println("System check identified no issues (0 silenced).")
 	fmt.Println(now)
 	fmt.Printf("Gorim version %s using env '%s'\n", version, env)
@@ -202,11 +214,11 @@ func startGorimServer() {
     signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
     <-quit
 
-    fmt.Println("Shutting down server...")
+    // fmt.Println("Shutting down server...")
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
     if err := server.Shutdown(ctx); err != nil {
         log.Fatalf("Failed to gracefully shut down server: %v", err)
     }
-    fmt.Println("Server stopped.")
+    // fmt.Println("Server stopped.")
 }

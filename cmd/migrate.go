@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/rimba47prayoga/gorim.git/conf"
 	"github.com/spf13/cobra"
+	"gorim.org/gorim/conf"
 	"gorm.io/gorm/logger"
 )
 

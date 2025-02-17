@@ -1,55 +1,30 @@
-# gorim
-Golang Framework inspired by Django
+# Gorim  
+**A Golang Framework Inspired by Django and Django Rest Framework**  
+**Built on top of Echo**
 
-Gorim features
+[![Go Reference](https://pkg.go.dev/badge/gorim.org/gorim.svg)](https://pkg.go.dev/gorim.org/gorim)  
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)  
 
-- Global Settings
-    - Database
-    - Server
-    - Middlewares
+Gorim is a backend framework built with Golang that adopts the architecture and design of Django and Django Rest Framework (DRF).  
+It is built on top of the [Echo](https://echo.labstack.com/) web framework, providing a high-performance, minimalist web server with a powerful routing system.  
+Gorim simplifies backend application development with class-based views, serializers, middlewares, and other features similar to Django.  
 
-- GenericViewSet
-    - GetQuerySet
-    - GetObject
-    - PKField: unique identifier for retrieving single object (default: id)
-    - Filter
-    - Pagination
+## ✨ Key Features  
+- **Built on Echo**: Leverages Echo's high-performance routing and middleware system.  
+- **Global Settings**: Configuration for database, server, and middleware.  
+- **Class-Based Views**: `GenericViewSet` with features like `GetQuerySet`, `GetObject`, `Filter`, and `Pagination`.  
+- **Mixins**: `CreateMixin`, `UpdateMixin`, `ListMixin`, `RetrieveMixin`.  
+- **Serializer**: Supports field validation and default Create & Update.  
+- **Permissions**: Permission system with `DEFAULT_PERMISSION_STRUCTS`.  
+- **DefaultRouter**: Typed parameter support (`/users/<int:id>`) and `RegisterFunc` for adding routes.  
+- **Middlewares**: Struct-based middleware with `RecoverMiddleware` and `LoggerMiddleware`.  
+- **Error Handling**: `errors.Raise` to stop the current process and immediately return a response.  
+- **Migrations**: Track migration versioning and apply data migrations with single execution.  
+- **Command Line (CLI)**: Use commands like `runserver`, `migrate`, and warnings for unapplied migrations.  
 
-- Mixins
-    - CreateMixin
-    - UpdateMixin
-    - ListMixin
-    - RetrieveMixin
+## 🚀 Installation  
+Make sure Go is installed, then run the following command:  
 
-- Serializer
-    - support single field validation
-    - default Create & Update
-
-- Permissions
-    - DEFAULT_PERMISSION_STRUCTS as global settings (default: permissions.IsAuthenticated)
-
-- DefaultRouter
-    - Type Parameter with validation (/users/<int:id>)
-    - DefaultRouter.RegisterFunc: for adding new route from extra handler function
-
-- Middlewares
-    - Change to struct instead of function
-    - RecoverMiddleware: for seamless error handling
-    - LoggerMiddleware: request logger in terminal with time ellapsed
-
-- Errors
-    - errors.Raise: to stop current process and immediately Response to client
-
-- utils
-    - HasAttr: checks if a struct has a field or method with a given name
-    - GetObjectOr404: Generic function to get object or return 404
-
-- Migrations
-    - Generate tables for tracking migration
-    - Track migration with versioning hash
-    - Datamigration / Query execution with only once applied
-
-- cmd
-    - runserver: only runserver without migration
-    - warning message if there's unapplied migration
-    - migrate: run migrations
+```sh
+go get gorim.org/gorim
+```

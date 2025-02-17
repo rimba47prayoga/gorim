@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"runtime"
 
-	"github.com/rimba47prayoga/gorim.git"
-	"github.com/rimba47prayoga/gorim.git/errors"
+	"gorim.org/gorim"
+	"gorim.org/gorim/errors"
 )
 
 type Response map[string]any

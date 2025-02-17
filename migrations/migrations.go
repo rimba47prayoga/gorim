@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/labstack/gommon/color"
-	"github.com/rimba47prayoga/gorim.git/conf"
-	"github.com/rimba47prayoga/gorim.git/utils"
+	"gorim.org/gorim/conf"
+	"gorim.org/gorim/utils"
 )
 
 var MIGRATE_MODELS string = "migrate_models"

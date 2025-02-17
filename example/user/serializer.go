@@ -1,8 +1,8 @@
 package user
 
 import (
-	"github.com/rimba47prayoga/gorim.git/models"
-	"github.com/rimba47prayoga/gorim.git/serializers"
+	"gorim.org/gorim/models"
+	"gorim.org/gorim/serializers"
 )
 
 type UserSerializer struct {

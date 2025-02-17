@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/rimba47prayoga/gorim.git"
-	"github.com/rimba47prayoga/gorim.git/interfaces"
-	"github.com/rimba47prayoga/gorim.git/models"
-	"github.com/rimba47prayoga/gorim.git/permissions"
-	"github.com/rimba47prayoga/gorim.git/serializers"
-	"github.com/rimba47prayoga/gorim.git/views"
-	"github.com/rimba47prayoga/gorim.git/views/mixins"
+	"gorim.org/gorim"
+	"gorim.org/gorim/interfaces"
+	"gorim.org/gorim/models"
+	"gorim.org/gorim/permissions"
+	"gorim.org/gorim/serializers"
+	"gorim.org/gorim/views"
+	"gorim.org/gorim/views/mixins"
 )
 
-
+//
 type ProductViewSet struct {
 	mixins.GenericViewSet[models.User]
 	mixins.ListMixin[models.User]
