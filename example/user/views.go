@@ -11,6 +11,7 @@ import (
 	"gorim.org/gorim/serializers"
 	"gorim.org/gorim/views"
 	"gorim.org/gorim/views/mixins"
+	"gorm.io/gorm"
 )
 
 //
@@ -50,6 +51,13 @@ func NewUserViewSet() *UserViewSet {
 	modelViewSet := views.NewModelViewSet(params)
 	viewset.ModelViewSet = *modelViewSet
 	return &viewset
+}
+
+func (h *UserViewSet) GetQuerySet() *gorm.DB {
+	if h.Action == "Profile" {
+		return h.GetQuerySet().Preload("Profile")
+	}
+	return h.GenericViewSet.GetQuerySet()
 }
 
 // override GetPermissions

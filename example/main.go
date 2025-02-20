@@ -8,8 +8,7 @@ import (
 )
 
 
-func main() {	
-	//
+func main() {
 	settings.Configure()
 	api.APIRoutes()
 	cmd.Execute()
