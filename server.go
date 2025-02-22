@@ -4,6 +4,15 @@ import (
 	"context"
 
 	"github.com/labstack/echo/v4"
+
+	// Force Gorim dependencies to be installed
+	_ "github.com/fsnotify/fsnotify"
+	_ "github.com/go-playground/validator/v10"
+	_ "github.com/joho/godotenv"
+	_ "github.com/labstack/gommon"
+	_ "github.com/mcuadros/go-defaults"
+	_ "github.com/spf13/cobra"
+	_ "gorm.io/gorm"
 )
 
 // Server represents the Gorim server
